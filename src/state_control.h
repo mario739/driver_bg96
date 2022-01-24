@@ -26,6 +26,8 @@ typedef enum
     US_UNKNOWNU,
 }us_state;
 
+
+
 md_state get_state_modem();
 us_state get_status_usim();
 
