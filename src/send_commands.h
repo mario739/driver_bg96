@@ -13,5 +13,4 @@ typedef enum
 } em_bg96_error_handling;
 
 em_bg96_error_handling bg96_SendCmdSingle( char *pCmd, char *expectResponde_OK, char *expectResponde_ERROR,char *md_Responde,uint32_t timeout);
-
 #endif

@@ -15,24 +15,83 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include "send_commands.h"
+#include <stdlib.h>
+#include "commands.h"
 
-#define CMD_RESPONDE_SMS "+CMGF:0\r\n\r\nOK\r\n"
-#define CMD_RESPONDE_SMS2 "+CMGF:1\r\n\r\nOK\r\n"
+typedef enum
+{
+  FT_BG96_OK=0,
+  FT_BG96_ERROR,
+  FT_BG96_BUSY,
+  FT_BG96_TIMEOUT,
+} em_bg96_error_handling;
+
+typedef em_bg96_error_handling(*pf_send_data)(char*,char*,char*,uint16_t);//comando,respuest,buffer,time
 
 typedef enum
 {
     MODE_PDU=0,
     MODE_TEXT,
-}em_bg96_sms_mode;
+}em_sms_mode;
 
 typedef struct 
 {
     uint8_t sms_mode;
 }st_bg96_data_sms;
 
+typedef enum 
+{
+    US_STATE_INSERTED=0,
+    US_STATE_REMOVED,
+    US_STATE_UNKNOWNU,
+}em_sim_states;
 
-em_bg96_error_handling set_sms_format(st_bg96_data_sms *obj,em_bg96_sms_mode mode);
-em_bg96_error_handling send_sms(char *number,char *msg);
+typedef enum
+{
+    STATE_ECHO_ON=0,
+    STATE_ECHO_OFF,        
+}em_status_echo;
+
+typedef enum
+{
+    SHORT_RESULT=0,
+    LONG_RESULT,
+}em_format_response;
+
+typedef enum
+{
+    ME_DISABLE=0,
+    ME_ENABLE_NUMERIC,
+    ME_ENABLE_TEXT,
+}em_format_error;
+
+
+typedef struct 
+{
+    em_sim_states sim_state;
+
+}st_config_sim;
+
+typedef struct 
+{
+    pf_send_data       send_data_device;
+    em_status_echo     mode_echo;
+    em_format_response format_response;
+    em_format_error    format_error;
+    em_sms_mode        mode_sms; 
+    
+}st_bg96_config;
+
+em_bg96_error_handling init_driver(st_bg96_config *obj,pf_send_data ft_send_data_device);
+
+em_bg96_error_handling get_status_modem(st_bg96_config *obj);
+em_bg96_error_handling get_status_sim(st_bg96_config *obj,st_config_sim *sim_comfig);
+
+em_bg96_error_handling set_mode_echo(st_bg96_config *obj,em_status_echo mode);
+em_bg96_error_handling set_format_response(st_bg96_config *obj,em_format_response mode);
+em_bg96_error_handling set_format_error(st_bg96_config *obj,em_format_error mode);
+em_bg96_error_handling set_sms_format(st_bg96_config *obj,em_sms_mode mode);
+
+em_bg96_error_handling send_sms_bg96(st_bg96_config *obj,char*number,char*message);
 
 #endif
