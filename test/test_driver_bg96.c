@@ -17,6 +17,8 @@
 
 st_bg96_config config_module={.send_data_device=NULL,.mode_echo=STATE_ECHO_OFF,.format_response=SHORT_RESULT};
 st_config_sim config_sim={.sim_state=US_STATE_UNKNOWNU};
+st_config_context_tcp config_context_tcp={.context_id=1,.context_type=1,.tcp_apn="4g.entel",.tcp_username="",.tcp_password="",.method_authentication=1};
+st_config_parameters_mqtt config_parameters_mqtt={.identifier_socket_mqtt=0,.quality_service=0,.host_name="\"industrial.api.ubidots.com\"",.port=1883,.mqtt_client_id="123456789",.mqtt_username="",.mqtt_password=""};
 
 void test_init_driver(void)
 {   
@@ -93,4 +95,60 @@ void test_send_sms_bg96(void)
    send_data_ExpectAndReturn("\x1A\r",RS_BG96_OK,buffer,12000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,send_sms_bg96(&config_module,"72950576","HOLA"));
+}
+
+void test_set_parameters_context_tcp(void)
+{
+   char buffer[30]={0};
+   send_data_ExpectAndReturn("AT+QICSGP=1,1,\"4g.entel\",\"\",\"\",1\r",RS_BG96_OK,buffer,300,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,set_parameter_context_tcp(&config_module,&config_context_tcp));
+}
+
+void test_activate_context_pdp(void)
+{
+   char buffer[30]={0};
+   send_data_ExpectAndReturn("AT+QIACT=1\r",RS_BG96_OK,buffer,150000,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,activate_context_pdp(&config_module,&config_context_tcp));
+}
+
+void test_desactivate_context_pdp(void)
+{
+   char buffer[30]={0};
+   send_data_ExpectAndReturn("AT+QIDEACT=1\r",RS_BG96_OK,buffer,150000,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,desactivate_context_pdp(&config_module,&config_context_tcp));
+}
+
+void test_set_parameters_MQTT(void)
+{
+   char buffer[30]={0};
+   send_data_ExpectAndReturn("AT+QMTCFG=\"pdpid\",0,1\r",RS_BG96_OK,buffer,300,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,set_parameters_mqtt(&config_module,&config_parameters_mqtt,&config_context_tcp));
+}
+
+void test_open_client_mqtt(void)
+{
+   char buffer[30]={0};
+   send_data_ExpectAndReturn("AT+QMTOPEN=0,\"industrial.api.ubidots.com\",1883\r",RS_BG96_OK,buffer,75000,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,open_client_mqtt(&config_module,&config_parameters_mqtt));
+}
+
+void test_close_client_mqtt(void)
+{
+   char buffer[30]={0};
+   send_data_ExpectAndReturn("AT+QMTCLOSE=0\r",RS_BG96_OK,buffer,300,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,close_client_mqtt(&config_module,&config_parameters_mqtt));
+}
+
+void test_connect_server_mqtt(void)
+{
+   char buffer[30]={0};
+   send_data_ExpectAndReturn("AT+QMTCONN=0,\"123456789\",\"\",\"\"\r",RS_BG96_OK,buffer,5000,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,connect_server_mqtt(&config_module,&config_parameters_mqtt));
 }

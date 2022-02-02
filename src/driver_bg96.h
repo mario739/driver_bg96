@@ -26,7 +26,7 @@ typedef enum
   FT_BG96_TIMEOUT,
 } em_bg96_error_handling;
 
-typedef em_bg96_error_handling(*pf_send_data)(char*,char*,char*,uint16_t);//comando,respuest,buffer,time
+typedef em_bg96_error_handling(*pf_send_data)(char*,char*,char*,uint32_t);//comando,respuest,buffer,time
 
 typedef enum
 {
@@ -65,6 +65,27 @@ typedef enum
     ME_ENABLE_TEXT,
 }em_format_error;
 
+typedef struct 
+{
+    uint8_t context_id;            //ID del contexto rango 1-16
+    uint8_t context_type;          //Tipo de protocolo 1=IPV4,2=IPV6
+    char *tcp_apn;                 //Nombre del punto de acceso
+    char *tcp_username;           //Nombre de usuario
+    char *tcp_password;            //Password 
+    uint8_t method_authentication; //Metodo de autentificacion 
+}st_config_context_tcp;
+
+typedef struct 
+{
+    uint8_t identifier_socket_mqtt; //Numero del socket configurado 1-5
+    uint8_t quality_service;        //Calidad de servicio del socket MQTT 
+    char *host_name;
+    uint32_t port;
+    char *mqtt_username;
+    char *mqtt_password;
+    char *mqtt_client_id;
+}st_config_parameters_mqtt;
+
 
 typedef struct 
 {
@@ -91,7 +112,15 @@ em_bg96_error_handling set_mode_echo(st_bg96_config *obj,em_status_echo mode);
 em_bg96_error_handling set_format_response(st_bg96_config *obj,em_format_response mode);
 em_bg96_error_handling set_format_error(st_bg96_config *obj,em_format_error mode);
 em_bg96_error_handling set_sms_format(st_bg96_config *obj,em_sms_mode mode);
-
+em_bg96_error_handling set_parameter_context_tcp(st_bg96_config *obj,st_config_context_tcp *obj_tcp);
 em_bg96_error_handling send_sms_bg96(st_bg96_config *obj,char*number,char*message);
 
+
+em_bg96_error_handling activate_context_pdp(st_bg96_config *obj,st_config_context_tcp *obj_tcp);
+em_bg96_error_handling desactivate_context_pdp(st_bg96_config *obj,st_config_context_tcp *obj_tcp);
+
+em_bg96_error_handling set_parameters_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt,st_config_context_tcp *obj_tcp);
+em_bg96_error_handling open_client_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt);
+em_bg96_error_handling close_client_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt);
+em_bg96_error_handling connect_server_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt);
 #endif

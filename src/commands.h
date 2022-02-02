@@ -22,8 +22,10 @@
 
 
 
-#define RS_BG96_OK  "\r\nOK\r\n"
-#define RS_BG96_STATUS_SIM "\r\n+QSIMSTAT: 0,1\r\n\r\nOK\r\n"
+#define RS_BG96_OK              "\r\nOK\r\n"
+#define RS_BG96_ERROR           "\r\nERROR\r\n"
+#define RS_BG96_SIGNAL          ">"
+#define RS_BG96_STATUS_SIM      "\r\n+QSIMSTAT: 0,1\r\n\r\nOK\r\n"
 
 #define CMD_TEST_BG96_FORMAT_ERROR "AT+CMEE=2\r"
 #define CMD_TEST_BG96_MODE_SMS     "AT+CMGF=1\r"

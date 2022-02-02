@@ -82,7 +82,7 @@ em_bg96_error_handling set_format_error(st_bg96_config *obj,em_format_error mode
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
     char cmd[20];
-    sprintf(cmd,"AT+CMEE=%i\r",mode);
+    sprintf(cmd,"AT+CMEE=%u\r",mode);
 
     ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
     if (FT_BG96_OK==ft_resp)
@@ -118,7 +118,7 @@ em_bg96_error_handling send_sms_bg96(st_bg96_config *obj,char*number,char*messag
     strcat(cmd,"\"\r");
     strcpy(buffer_message,message);
     strcat(buffer_message,"\r");
-
+    
     ft_resp=obj->send_data_device(cmd,expect_responde_sg,buffer_receive,12000);
     if (FT_BG96_OK==ft_resp)
     {
@@ -126,7 +126,81 @@ em_bg96_error_handling send_sms_bg96(st_bg96_config *obj,char*number,char*messag
         if (FT_BG96_OK==ft_resp)
         {
            ft_resp=obj->send_data_device("\x1A\r",RS_BG96_OK,buffer_receive,12000);
-        } 
+        }
     }
+    return ft_resp;
+}
+
+em_bg96_error_handling set_parameter_context_tcp(st_bg96_config *obj,st_config_context_tcp *obj_tcp)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    //char cmd[35]="AT+QICSGP=1,1,\"";
+    char cmd[100];
+    sprintf(cmd,"AT+QICSGP=%u,%u,\"%s\",\"%s\",\"%s\",%u\r",obj_tcp->context_id,obj_tcp->context_type,obj_tcp->tcp_apn,obj_tcp->tcp_username,obj_tcp->tcp_password,obj_tcp->method_authentication);
+    /*strcat(cmd,obj_tcp->tcp_apn);
+    strcat(cmd,"\",\"");
+    strcat(cmd,obj_tcp->tcp_user_name);
+    strcat(cmd,"\",\"");
+    strcat(cmd,obj_tcp->tcp_password);
+    strcat(cmd,"\",1\r");*/
+    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
+    return ft_resp;
+}
+
+em_bg96_error_handling activate_context_pdp(st_bg96_config *obj,st_config_context_tcp *obj_tcp)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    //char cmd[12]="AT+QIACT=1\r";
+    char cmd[15];
+    sprintf(cmd,"AT+QIACT=%u\r",obj_tcp->context_id);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,150000);
+    return ft_resp;
+}
+em_bg96_error_handling desactivate_context_pdp(st_bg96_config *obj,st_config_context_tcp *obj_tcp)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    //char cmd[15]="AT+QIDEACT=1\r";
+    char cmd[15];
+    sprintf(cmd,"AT+QIDEACT=%u\r",obj_tcp->context_id);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,150000);
+    return ft_resp;
+}
+em_bg96_error_handling set_parameters_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt,st_config_context_tcp *obj_tcp)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    char cmd_pdpid[30];
+    sprintf(cmd_pdpid,"AT+QMTCFG=\"pdpid\",%u,%u\r",obj_mqtt->identifier_socket_mqtt,obj_tcp->context_id);
+    ft_resp=obj->send_data_device(cmd_pdpid,RS_BG96_OK,buffer_receive,300);
+    return ft_resp;
+}
+em_bg96_error_handling open_client_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    char cmd[50];
+    sprintf(cmd,"AT+QMTOPEN=%u,%s,%u\r",obj_mqtt->identifier_socket_mqtt,obj_mqtt->host_name,obj_mqtt->port);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,75000);
+    return ft_resp;
+}
+em_bg96_error_handling close_client_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    char cmd[50];
+    sprintf(cmd,"AT+QMTCLOSE=%u\r",obj_mqtt->identifier_socket_mqtt);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
+    return ft_resp;
+}
+em_bg96_error_handling connect_server_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    char cmd[50];
+    sprintf(cmd,"AT+QMTCONN=%u,\"%s\",\"%s\",\"%s\"\r",obj_mqtt->identifier_socket_mqtt,obj_mqtt->mqtt_client_id,obj_mqtt->mqtt_username,obj_mqtt->mqtt_password);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,5000);
     return ft_resp;
 }
