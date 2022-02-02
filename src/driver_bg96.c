@@ -165,7 +165,7 @@ em_bg96_error_handling desactivate_context_pdp(st_bg96_config *obj,st_config_con
     //char cmd[15]="AT+QIDEACT=1\r";
     char cmd[15];
     sprintf(cmd,"AT+QIDEACT=%u\r",obj_tcp->context_id);
-    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,150000);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,40000);
     return ft_resp;
 }
 em_bg96_error_handling set_parameters_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt,st_config_context_tcp *obj_tcp)
@@ -199,8 +199,35 @@ em_bg96_error_handling connect_server_mqtt(st_bg96_config *obj,st_config_paramet
 {
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
-    char cmd[50];
+    char cmd[50]={0};
     sprintf(cmd,"AT+QMTCONN=%u,\"%s\",\"%s\",\"%s\"\r",obj_mqtt->identifier_socket_mqtt,obj_mqtt->mqtt_client_id,obj_mqtt->mqtt_username,obj_mqtt->mqtt_password);
     ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,5000);
+    return ft_resp;
+}
+
+em_bg96_error_handling disconnect_server_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    char cmd[50]={0};
+    sprintf(cmd,"AT+QMTDISC=%u\r",obj_mqtt->identifier_socket_mqtt);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
+    return ft_resp;
+}
+em_bg96_error_handling publish_message(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt,char *topic,char *data)
+{
+    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
+    char buffer_receive[30]={0};
+    char cmd[50]={0};
+    sprintf(cmd,"AT+QMTPUB=%u,0,0,0,\"%s\"\r",obj_mqtt->identifier_socket_mqtt,topic);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_SIGNAL,buffer_receive,300);
+    if (FT_BG96_OK==ft_resp)
+    {
+        ft_resp=obj->send_data_device(data,NULL,buffer_receive,300);
+        if (FT_BG96_OK==ft_resp)
+        {
+            ft_resp=obj->send_data_device("\x1A\r",RS_BG96_OK,buffer_receive,15000);
+        }          
+    }
     return ft_resp;
 }

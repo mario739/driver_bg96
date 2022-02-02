@@ -116,7 +116,7 @@ void test_activate_context_pdp(void)
 void test_desactivate_context_pdp(void)
 {
    char buffer[30]={0};
-   send_data_ExpectAndReturn("AT+QIDEACT=1\r",RS_BG96_OK,buffer,150000,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QIDEACT=1\r",RS_BG96_OK,buffer,40000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,desactivate_context_pdp(&config_module,&config_context_tcp));
 }
@@ -151,4 +151,24 @@ void test_connect_server_mqtt(void)
    send_data_ExpectAndReturn("AT+QMTCONN=0,\"123456789\",\"\",\"\"\r",RS_BG96_OK,buffer,5000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,connect_server_mqtt(&config_module,&config_parameters_mqtt));
+}
+void test_disconnect_server_mqtt(void)
+{
+   char buffer[30]={0};
+   send_data_ExpectAndReturn("AT+QMTDISC=0\r",RS_BG96_OK,buffer,300,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,disconnect_server_mqtt(&config_module,&config_parameters_mqtt));
+}
+void test_publish_message(void)
+{
+   char buffer[30]={0};
+   char topic[]="/v1.6/devices/demo";
+   char data[]="{\"demo\":10,\"humedad\":60}";
+   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer,300,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   send_data_ExpectAndReturn(data,NULL,buffer,300,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   send_data_ExpectAndReturn("\x1A\r",RS_BG96_OK,buffer,15000,FT_BG96_OK);
+   send_data_IgnoreArg_buffer();
+   TEST_ASSERT_EQUAL(FT_BG96_OK,publish_message(&config_module,&config_parameters_mqtt,topic,data));
 }

@@ -123,4 +123,6 @@ em_bg96_error_handling set_parameters_mqtt(st_bg96_config *obj,st_config_paramet
 em_bg96_error_handling open_client_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt);
 em_bg96_error_handling close_client_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt);
 em_bg96_error_handling connect_server_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt);
+em_bg96_error_handling disconnect_server_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt);
+em_bg96_error_handling publish_message(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt,char *topic,char *data);
 #endif
