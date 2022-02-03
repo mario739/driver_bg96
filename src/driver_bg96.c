@@ -56,7 +56,7 @@ em_bg96_error_handling set_mode_echo(st_bg96_config *obj,em_status_echo mode)
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
     
-    ft_resp=obj->send_data_device(mode>0?CMD_BG96_MODE_ECHO_OFF:CMD_BG96_MODE_ECHO_ON,RS_BG96_OK,buffer_receive,300);
+    ft_resp=obj->send_data_device(mode==0?CMD_BG96_MODE_ECHO_OFF:CMD_BG96_MODE_ECHO_ON,RS_BG96_OK,buffer_receive,300);
     if (FT_BG96_OK==ft_resp)
     {
        obj->mode_echo=mode;
@@ -112,14 +112,13 @@ em_bg96_error_handling send_sms_bg96(st_bg96_config *obj,char*number,char*messag
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
     char buffer_message[256];
-    char *expect_responde_sg=">";
     char cmd[30]="AT+CMGS=\"";
     strcat(cmd,number);
     strcat(cmd,"\"\r");
     strcpy(buffer_message,message);
     strcat(buffer_message,"\r");
     
-    ft_resp=obj->send_data_device(cmd,expect_responde_sg,buffer_receive,12000);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_SIGNAL,buffer_receive,12000);
     if (FT_BG96_OK==ft_resp)
     {
         ft_resp=obj->send_data_device(buffer_message,NULL,buffer_receive,12000);
@@ -183,7 +182,7 @@ em_bg96_error_handling open_client_mqtt(st_bg96_config *obj,st_config_parameters
     char buffer_receive[30]={0};
     char cmd[50];
     sprintf(cmd,"AT+QMTOPEN=%u,%s,%u\r",obj_mqtt->identifier_socket_mqtt,obj_mqtt->host_name,obj_mqtt->port);
-    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,75000);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_CERO,buffer_receive,75000);
     return ft_resp;
 }
 em_bg96_error_handling close_client_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt)
@@ -192,7 +191,7 @@ em_bg96_error_handling close_client_mqtt(st_bg96_config *obj,st_config_parameter
     char buffer_receive[30]={0};
     char cmd[50];
     sprintf(cmd,"AT+QMTCLOSE=%u\r",obj_mqtt->identifier_socket_mqtt);
-    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_CERO,buffer_receive,300);
     return ft_resp;
 }
 em_bg96_error_handling connect_server_mqtt(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt)
@@ -201,7 +200,7 @@ em_bg96_error_handling connect_server_mqtt(st_bg96_config *obj,st_config_paramet
     char buffer_receive[30]={0};
     char cmd[50]={0};
     sprintf(cmd,"AT+QMTCONN=%u,\"%s\",\"%s\",\"%s\"\r",obj_mqtt->identifier_socket_mqtt,obj_mqtt->mqtt_client_id,obj_mqtt->mqtt_username,obj_mqtt->mqtt_password);
-    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,5000);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_CERO,buffer_receive,5000);
     return ft_resp;
 }
 
@@ -211,7 +210,7 @@ em_bg96_error_handling disconnect_server_mqtt(st_bg96_config *obj,st_config_para
     char buffer_receive[30]={0};
     char cmd[50]={0};
     sprintf(cmd,"AT+QMTDISC=%u\r",obj_mqtt->identifier_socket_mqtt);
-    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
+    ft_resp=obj->send_data_device(cmd,RS_BG96_CERO,buffer_receive,300);
     return ft_resp;
 }
 em_bg96_error_handling publish_message(st_bg96_config *obj,st_config_parameters_mqtt *obj_mqtt,char *topic,char *data)
@@ -226,7 +225,7 @@ em_bg96_error_handling publish_message(st_bg96_config *obj,st_config_parameters_
         ft_resp=obj->send_data_device(data,NULL,buffer_receive,300);
         if (FT_BG96_OK==ft_resp)
         {
-            ft_resp=obj->send_data_device("\x1A\r",RS_BG96_OK,buffer_receive,15000);
+            ft_resp=obj->send_data_device("\x1A\r",RS_BG96_CERO,buffer_receive,15000);
         }          
     }
     return ft_resp;

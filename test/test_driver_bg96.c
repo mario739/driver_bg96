@@ -52,7 +52,7 @@ void test_get_status_sim(void)
 void test_set_mode_echo(void)
 {  
    char buffer[30]={0};
-   send_data_ExpectAndReturn(CMD_BG96_MODE_ECHO_ON,RS_BG96_OK,buffer,300,FT_BG96_OK);
+   send_data_ExpectAndReturn(CMD_BG96_MODE_ECHO_OFF,RS_BG96_OK,buffer,300,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,set_mode_echo(&config_module,STATE_ECHO_ON));
    TEST_ASSERT_EQUAL(STATE_ECHO_ON,config_module.mode_echo);
@@ -132,7 +132,7 @@ void test_set_parameters_MQTT(void)
 void test_open_client_mqtt(void)
 {
    char buffer[30]={0};
-   send_data_ExpectAndReturn("AT+QMTOPEN=0,\"industrial.api.ubidots.com\",1883\r",RS_BG96_OK,buffer,75000,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QMTOPEN=0,\"industrial.api.ubidots.com\",1883\r",RS_BG96_CERO,buffer,75000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,open_client_mqtt(&config_module,&config_parameters_mqtt));
 }
@@ -140,7 +140,7 @@ void test_open_client_mqtt(void)
 void test_close_client_mqtt(void)
 {
    char buffer[30]={0};
-   send_data_ExpectAndReturn("AT+QMTCLOSE=0\r",RS_BG96_OK,buffer,300,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QMTCLOSE=0\r",RS_BG96_CERO,buffer,300,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,close_client_mqtt(&config_module,&config_parameters_mqtt));
 }
@@ -148,14 +148,14 @@ void test_close_client_mqtt(void)
 void test_connect_server_mqtt(void)
 {
    char buffer[30]={0};
-   send_data_ExpectAndReturn("AT+QMTCONN=0,\"123456789\",\"\",\"\"\r",RS_BG96_OK,buffer,5000,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QMTCONN=0,\"123456789\",\"\",\"\"\r",RS_BG96_CERO,buffer,5000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,connect_server_mqtt(&config_module,&config_parameters_mqtt));
 }
 void test_disconnect_server_mqtt(void)
 {
    char buffer[30]={0};
-   send_data_ExpectAndReturn("AT+QMTDISC=0\r",RS_BG96_OK,buffer,300,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QMTDISC=0\r",RS_BG96_CERO,buffer,300,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,disconnect_server_mqtt(&config_module,&config_parameters_mqtt));
 }
@@ -168,7 +168,7 @@ void test_publish_message(void)
    send_data_IgnoreArg_buffer();
    send_data_ExpectAndReturn(data,NULL,buffer,300,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
-   send_data_ExpectAndReturn("\x1A\r",RS_BG96_OK,buffer,15000,FT_BG96_OK);
+   send_data_ExpectAndReturn("\x1A\r",RS_BG96_CERO,buffer,15000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,publish_message(&config_module,&config_parameters_mqtt,topic,data));
 }
