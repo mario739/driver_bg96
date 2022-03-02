@@ -14,67 +14,71 @@
 em_bg96_error_handling init_driver(st_bg96_config *obj,pf_send_data ft_send_data_device)
 {
     obj->send_data_device=ft_send_data_device;
-    return FT_BG96_OK;
+    if (obj->send_data_device!=NULL)
+    {
+        obj->ft_resp=FT_BG96_OK;
+    }            
+    else obj->code_error=BG96_ERROR_INIT;
+    return obj->ft_resp;
 }
 em_bg96_error_handling get_status_modem(st_bg96_config*obj)
 {
-    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
-    char buffer_receive[30];
-    
-    ft_resp=obj->send_data_device(CMD_BG96_STATUS_MODEM,RS_BG96_OK,buffer_receive,100);
-    return ft_resp;
+    char buffer_receive[30]; 
+    obj->ft_resp=obj->send_data_device(CMD_BG96_STATUS_MODEM,RS_BG96_OK,buffer_receive,100);
+    if (obj->ft_resp!=FT_BG96_OK)
+    {
+        obj->code_error=BG96_ERROR_STATUS_MODEM;
+    }
+    return obj->ft_resp;
 }
-em_bg96_error_handling get_status_sim(st_bg96_config *obj,st_config_sim *sim_comfig)
+em_bg96_error_handling get_status_sim(st_bg96_config *obj)
 {
-    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
     char buffer_parse[10]={0};
     
-    ft_resp=obj->send_data_device(CMD_BG96_STATUS_SIM,RS_BG96_OK,buffer_receive,300);
-    if (FT_BG96_OK==ft_resp)
+    obj->ft_resp=obj->send_data_device(CMD_BG96_STATUS_SIM,RS_BG96_OK,buffer_receive,300);
+    if (FT_BG96_OK==obj->ft_resp)
     {
         parse_string(buffer_receive,',','\r',buffer_parse);
         uint8_t un_data=(uint8_t)atoi(buffer_parse);
         if (un_data==0)
         {
-            sim_comfig->sim_state=US_STATE_INSERTED;
+            obj->sim_comfig->sim_state=US_STATE_INSERTED;
         }
         else if (un_data==1)
         {
-            sim_comfig->sim_state=US_STATE_REMOVED;
+            obj->sim_comfig->sim_state=US_STATE_REMOVED;
         }
         else if (un_data==2)
         {
-            sim_comfig->sim_state=US_STATE_UNKNOWNU;
+            obj->sim_comfig->sim_state=US_STATE_UNKNOWNU;
         }    
     }
-    return ft_resp;
+    return obj->ft_resp;
 }
 
 em_bg96_error_handling set_mode_echo(st_bg96_config *obj,em_status_echo mode)
 {
-    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
-    
-    ft_resp=obj->send_data_device(mode==0?CMD_BG96_MODE_ECHO_OFF:CMD_BG96_MODE_ECHO_ON,RS_BG96_OK,buffer_receive,300);
-    if (FT_BG96_OK==ft_resp)
+    obj->ft_resp=obj->send_data_device(mode==0?CMD_BG96_MODE_ECHO_OFF:CMD_BG96_MODE_ECHO_ON,RS_BG96_OK,buffer_receive,300);
+    if (FT_BG96_OK==obj->ft_resp)
     {
        obj->mode_echo=mode;
-    }   
-    return ft_resp;
+    }
+    else obj->code_error=BG96_ERROR_SET_MODE_ECHO;   
+    return obj->ft_resp;
 }
 
 em_bg96_error_handling set_format_response(st_bg96_config *obj,em_format_response mode)
 {
-    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
-    
-    ft_resp=obj->send_data_device(mode==0? CMD_BG96_MODE_RESPONSE_SHORT:CMD_BG96_MODE_RESPONSE_LONG,RS_BG96_OK,buffer_receive,300);
-    if (FT_BG96_OK==ft_resp)
+    obj->ft_resp=obj->send_data_device(mode==0? CMD_BG96_MODE_RESPONSE_SHORT:CMD_BG96_MODE_RESPONSE_LONG,RS_BG96_OK,buffer_receive,300);
+    if (FT_BG96_OK==obj->ft_resp)
     {
         obj->format_response=mode;
     }
-    return ft_resp;
+    else obj->code_error=BG96_ERROE_SET_FORMAT_RESPONSE;
+    return obj->ft_resp;
 }
 
 em_bg96_error_handling set_format_error(st_bg96_config *obj,em_format_error mode)
@@ -133,16 +137,9 @@ em_bg96_error_handling send_sms_bg96(st_bg96_config *obj,char*number,char*messag
 em_bg96_error_handling set_parameter_context_tcp(st_bg96_config *obj,st_config_context_tcp *obj_tcp)
 {
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
-    char buffer_receive[30]={0};
-    //char cmd[35]="AT+QICSGP=1,1,\"";
+    char buffer_receive[50]={0};
     char cmd[100];
     sprintf(cmd,"AT+QICSGP=%u,%u,\"%s\",\"%s\",\"%s\",%u\r",obj_tcp->context_id,obj_tcp->context_type,obj_tcp->tcp_apn,obj_tcp->tcp_username,obj_tcp->tcp_password,obj_tcp->method_authentication);
-    /*strcat(cmd,obj_tcp->tcp_apn);
-    strcat(cmd,"\",\"");
-    strcat(cmd,obj_tcp->tcp_user_name);
-    strcat(cmd,"\",\"");
-    strcat(cmd,obj_tcp->tcp_password);
-    strcat(cmd,"\",1\r");*/
     ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
     return ft_resp;
 }
@@ -151,7 +148,6 @@ em_bg96_error_handling activate_context_pdp(st_bg96_config *obj,st_config_contex
 {
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
-    //char cmd[12]="AT+QIACT=1\r";
     char cmd[15];
     sprintf(cmd,"AT+QIACT=%u\r",obj_tcp->context_id);
     ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,150000);
@@ -161,7 +157,6 @@ em_bg96_error_handling desactivate_context_pdp(st_bg96_config *obj,st_config_con
 {
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
-    //char cmd[15]="AT+QIDEACT=1\r";
     char cmd[15];
     sprintf(cmd,"AT+QIDEACT=%u\r",obj_tcp->context_id);
     ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,40000);
@@ -229,4 +224,76 @@ em_bg96_error_handling publish_message(st_bg96_config *obj,st_config_parameters_
         }          
     }
     return ft_resp;
+}
+
+
+void send_data_mqtt(st_bg96_config *obj,st_config_context_tcp *obj_tcp,st_config_sim *obj_sim_comfig,st_config_parameters_mqtt *obj_mqtt,char *topic,char *data)
+{
+    em_states_send_data states_send_data_mqtt=INIT_SEND_DATA_MQTT;
+    uint8_t flag_machine=1;
+    uint8_t count_machine=0;
+    while (flag_machine==1)
+    {
+        switch (states_send_data_mqtt)
+        {
+        case INIT_SEND_DATA_MQTT:
+            if (get_status_modem(obj)==FT_BG96_OK)
+            {
+                if (get_status_sim(obj))
+                {
+                    if (obj_sim_comfig->sim_state==US_STATE_INSERTED)
+                    {
+                        states_send_data_mqtt=CONFIG_PDP_CONTEXT;
+                    }
+                }
+                else states_send_data_mqtt=RESET_MODULE;
+            }
+            else states_send_data_mqtt=RESET_MODULE;
+            break;
+
+        case CONFIG_PDP_CONTEXT:
+            if (set_parameter_context_tcp(obj,obj_tcp)==FT_BG96_OK)
+                    states_send_data_mqtt=ACTIVATE_PDP_CONTEXT;
+            else states_send_data_mqtt=RESET_MODULE;                       
+            break;
+
+        case ACTIVATE_PDP_CONTEXT:
+            if (activate_context_pdp(obj,obj_tcp)==FT_BG96_OK)
+                states_send_data_mqtt=OPEN_CONNECTION_MQTT; 
+            else states_send_data_mqtt=DEACTIVATE_PDP_CONTEXT;        
+            break;
+        case OPEN_CONNECTION_MQTT:
+            if (open_client_mqtt(obj,obj_mqtt)==FT_BG96_OK)
+                states_send_data_mqtt=CONNECT_BROKER_MQTT;
+            else states_send_data_mqtt=DEACTIVATE_PDP_CONTEXT;
+            break;
+        case CONNECT_BROKER_MQTT:
+            if (connect_server_mqtt(obj,obj_mqtt)==FT_BG96_OK)
+                states_send_data_mqtt=PUB_MQTT;
+            else states_send_data_mqtt=DISCONNECT_BROKER_MQTT;
+            break;
+        case PUB_MQTT:
+            if (publish_message(obj,obj_mqtt,topic,data)==FT_BG96_OK)
+                states_send_data_mqtt=DISCONNECT_BROKER_MQTT;             
+            break;
+        case DISCONNECT_BROKER_MQTT:
+            if (disconnect_server_mqtt(obj,obj_mqtt)==FT_BG96_OK)
+            {
+                states_send_data_mqtt=DEACTIVATE_PDP_CONTEXT;
+            }
+        case DEACTIVATE_PDP_CONTEXT:
+            for (uint8_t i = 0; i <3 ; i++)
+            {
+                if (desactivate_context_pdp(obj,obj_tcp)==FT_BG96_OK)
+                {   
+                    states_send_data_mqtt=INIT_SEND_DATA_MQTT;
+                    break;
+                }
+            }
+            states_send_data_mqtt=RESET_MODULE;
+            break;
+        default:
+            break;
+        }   
+    }   
 }

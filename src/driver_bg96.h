@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include "commands.h"
 
+
+
 typedef enum
 {
   FT_BG96_OK=0,
@@ -65,6 +67,21 @@ typedef enum
     ME_ENABLE_TEXT,
 }em_format_error;
 
+typedef enum
+{
+    INIT_SEND_DATA_MQTT,
+    RESET_MODULE,
+    CONFIG_PDP_CONTEXT,
+    ACTIVATE_PDP_CONTEXT,
+    OPEN_CONNECTION_MQTT,
+    CONNECT_BROKER_MQTT,
+    PUB_MQTT,
+    DEACTIVATE_PDP_CONTEXT,
+    DISCONNECT_BROKER_MQTT,
+}em_states_send_data;
+
+
+
 typedef struct 
 {
     uint8_t context_id;            //ID del contexto rango 1-16
@@ -100,13 +117,15 @@ typedef struct
     em_format_response format_response;
     em_format_error    format_error;
     em_sms_mode        mode_sms; 
-    
+    uint32_t           code_error;
+    em_bg96_error_handling ft_resp;
+    st_config_sim      *sim_comfig;
 }st_bg96_config;
 
 em_bg96_error_handling init_driver(st_bg96_config *obj,pf_send_data ft_send_data_device);
 
 em_bg96_error_handling get_status_modem(st_bg96_config *obj);
-em_bg96_error_handling get_status_sim(st_bg96_config *obj,st_config_sim *sim_comfig);
+em_bg96_error_handling get_status_sim(st_bg96_config *obj);
 
 em_bg96_error_handling set_mode_echo(st_bg96_config *obj,em_status_echo mode);
 em_bg96_error_handling set_format_response(st_bg96_config *obj,em_format_response mode);

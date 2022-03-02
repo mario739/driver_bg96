@@ -12,6 +12,13 @@
 #ifndef COMMANDS
 #define COMMANDS
 
+
+#define BG96_NO_ERROR            0x0U   
+#define BG96_ERROR_INIT          0x1U
+#define BG96_ERROR_STATUS_MODEM  0x2U
+#define BG96_ERROR_SET_MODE_ECHO 0x3U
+#define BG96_ERROE_SET_FORMAT_RESPONSE 0x4U 
+
 #define CMD_BG96_STATUS_MODEM   "AT\r"
 #define CMD_BG96_STATUS_SIM     "AT+QSIMSTAT?\r"  
 #define CMD_BG96_MODE_ECHO_OFF  "ATE0\r"

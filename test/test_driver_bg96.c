@@ -15,8 +15,9 @@
 
 #define TS_RS_STATUS_SIM  "\r\n+QSIMSTAT: 0,1\r\n\r\nOK\r\n"
 
-st_bg96_config config_module={.send_data_device=NULL,.mode_echo=STATE_ECHO_OFF,.format_response=SHORT_RESULT};
-st_config_sim config_sim={.sim_state=US_STATE_UNKNOWNU};
+st_config_sim  config_sim={.sim_state=US_STATE_UNKNOWNU};
+st_bg96_config config_module={.send_data_device=NULL,.mode_echo=STATE_ECHO_OFF,.format_response=SHORT_RESULT
+                              ,.ft_resp=FT_BG96_ERROR,.code_error=BG96_NO_ERROR,.sim_comfig=&config_sim};
 st_config_context_tcp config_context_tcp={.context_id=1,.context_type=1,.tcp_apn="4g.entel",.tcp_username="",.tcp_password="",.method_authentication=1};
 st_config_parameters_mqtt config_parameters_mqtt={.identifier_socket_mqtt=0,.quality_service=0,.host_name="\"industrial.api.ubidots.com\"",.port=1883,.mqtt_client_id="123456789",.mqtt_username="",.mqtt_password=""};
 
@@ -24,6 +25,7 @@ void test_init_driver(void)
 {   
    TEST_ASSERT_EQUAL(FT_BG96_OK,init_driver(&config_module,send_data));
    TEST_ASSERT_EQUAL(config_module.send_data_device,send_data);
+   TEST_ASSERT_EQUAL_UINT(config_module.code_error,BG96_NO_ERROR);
 }
 
 void test_get_status_modem(void)
@@ -45,7 +47,7 @@ void test_get_status_sim(void)
    parse_string_Expect(RS_BG96_STATUS_SIM,',','\r',p);
    parse_string_IgnoreArg_buffer();
    parse_string_ReturnArrayThruPtr_buffer("2",2);
-   TEST_ASSERT_EQUAL(FT_BG96_OK,get_status_sim(&config_module,&config_sim));
+   TEST_ASSERT_EQUAL(FT_BG96_OK,get_status_sim(&config_module));
    TEST_ASSERT_EQUAL(US_STATE_UNKNOWNU,config_sim.sim_state);
 }
 
