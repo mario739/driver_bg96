@@ -50,4 +50,5 @@
 
 #define CMD_RESPONDE_SMS "+CMGF:0\r\n\r\nOK\r\n"
 #define CMD_RESPONDE_SMS2 "+CMGF:1\r\n\r\nOK\r\n"
+
 #endif

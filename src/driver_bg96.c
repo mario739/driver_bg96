@@ -182,7 +182,7 @@ em_bg96_error_handling set_parameters_mqtt(st_bg96_config *obj,st_config_paramet
 }
 em_bg96_error_handling open_client_mqtt(st_bg96_config *obj)
 {
-    char buffer_receive[30]={0};
+    char buffer_receive[70]={0};
     char cmd[50];
     sprintf(cmd,"AT+QMTOPEN=%u,%s,%u\r",obj->obj_mqtt->identifier_socket_mqtt,obj->obj_mqtt->host_name,obj->obj_mqtt->port);
     obj->ft_resp=obj->send_data_device(cmd,RS_BG96_CERO,buffer_receive,75000);
@@ -206,7 +206,7 @@ em_bg96_error_handling close_client_mqtt(st_bg96_config *obj)
 }
 em_bg96_error_handling connect_server_mqtt(st_bg96_config *obj)
 {
-    char buffer_receive[30]={0};
+    char buffer_receive[150]={0};
     char cmd[50]={0};
     sprintf(cmd,"AT+QMTCONN=%u,\"%s\",\"%s\",\"%s\"\r",obj->obj_mqtt->identifier_socket_mqtt,obj->obj_mqtt->mqtt_client_id,obj->obj_mqtt->mqtt_username,obj->obj_mqtt->mqtt_password);
     obj->ft_resp=obj->send_data_device(cmd,RS_BG96_CERO,buffer_receive,5000);
@@ -231,18 +231,20 @@ em_bg96_error_handling disconnect_server_mqtt(st_bg96_config *obj)
 }
 em_bg96_error_handling publish_message(st_bg96_config *obj,char *topic,char *data)
 {
-    char buffer_receive[30]={0};
+    char buffer_receive[70]={0};
+    char buffer_receive_data[70]={0};
     char cmd[50]={0};
+    char buffer_data[50]={0};
+    sprintf(buffer_data,"%s\x1a\r",data);
     sprintf(cmd,"AT+QMTPUB=%u,0,0,0,\"%s\"\r",obj->obj_mqtt->identifier_socket_mqtt,topic);
     obj->ft_resp=obj->send_data_device(cmd,RS_BG96_SIGNAL,buffer_receive,300);
     if (FT_BG96_OK==obj->ft_resp)
     {
-        obj->ft_resp=obj->send_data_device(data,NULL,buffer_receive,300);
-        if (FT_BG96_OK==obj->ft_resp)
+        obj->ft_resp=obj->send_data_device(buffer_data,RS_BG96_CERO,buffer_receive,15000);
+        if (obj->ft_resp!=FT_BG96_OK)
         {
-            obj->ft_resp=obj->send_data_device("\x1A\r",RS_BG96_CERO,buffer_receive,15000);
-        }
-        else obj->code_error=BG96_ERROR_PUBLISH_MESSAGE;   
+            obj->code_error=BG96_ERROR_PUBLISH_MESSAGE;
+        }   
     }
     else obj->code_error=BG96_ERROR_PUBLISH_MESSAGE;
     return obj->ft_resp;

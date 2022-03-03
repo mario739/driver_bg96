@@ -176,9 +176,7 @@ void test_publish_message(void)
    char data[25]="{\"demo\":10,\"humedad\":60}";
    send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer,300,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
-   send_data_ExpectAndReturn(data,NULL,buffer,300,FT_BG96_OK);
-   send_data_IgnoreArg_buffer();
-   send_data_ExpectAndReturn("\x1A\r",RS_BG96_CERO,buffer,15000,FT_BG96_OK);
+   send_data_ExpectAndReturn("{\"demo\":10,\"humedad\":60}\x1a\r",RS_BG96_CERO,buffer,15000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
    TEST_ASSERT_EQUAL(FT_BG96_OK,publish_message(&config_module,topic,data));
    TEST_ASSERT_EQUAL_UINT(config_module.code_error,BG96_NO_ERROR);
@@ -201,16 +199,15 @@ void test_state_machine_send_data(void)
 
    send_data_ExpectAndReturn("AT+QMTOPEN=0,\"industrial.api.ubidots.com\",1883\r",RS_BG96_CERO,buffer,75000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
-   
+
    send_data_ExpectAndReturn("AT+QMTCONN=0,\"123456789\",\"\",\"\"\r",RS_BG96_CERO,buffer,5000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
 
    send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer,300,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
-   send_data_ExpectAndReturn(data,NULL,buffer,300,FT_BG96_OK);
+   send_data_ExpectAndReturn("{\"demo\":10,\"humedad\":60}\x1a\r",RS_BG96_CERO,buffer,15000,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
-   send_data_ExpectAndReturn("\x1A\r",RS_BG96_CERO,buffer,15000,FT_BG96_OK);
-   send_data_IgnoreArg_buffer();
+
 
    send_data_ExpectAndReturn("AT+QMTDISC=0\r",RS_BG96_CERO,buffer,300,FT_BG96_OK);
    send_data_IgnoreArg_buffer();
@@ -219,6 +216,6 @@ void test_state_machine_send_data(void)
    send_data_IgnoreArg_buffer();
    
    TEST_ASSERT_EQUAL(FT_BG96_OK,send_data_mqtt(&config_module,topic,data));
-   TEST_ASSERT_EQUAL_UINT(config_module.code_error,BG96_NO_ERROR);
+   TEST_ASSERT_EQUAL_UINT(BG96_NO_ERROR,config_module.code_error);
 }
 
