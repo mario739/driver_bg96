@@ -26,11 +26,13 @@
 #define BG96_ERROR_PUBLISH_MESSAGE 0x10U
 #define BG96_ERROR_DISCONNECT_SERVER_MQTT 0x11U
 #define BG96_ERROR_CLOSE_CLIENT_MQTT 0x12U
-
-
+#define BG96_ERROR_STATUS_SIM 0x13U
+#define BG96_ERROR_SET_SMS_FORMAT 0x14U
+#define BG96_ERROR_SEND_SMS 0x15U
+#define BG96_ERROR_TURN_OFF 0x16U
 
 #define CMD_BG96_STATUS_MODEM   "AT\r"
-#define CMD_BG96_STATUS_SIM     "AT+QSIMSTAT?\r"  
+#define CMD_BG96_STATUS_SIM     "AT+CPIN?\r"
 #define CMD_BG96_MODE_ECHO_OFF  "ATE0\r"
 #define CMD_BG96_MODE_ECHO_ON   "ATE1\r"
 #define CMD_BG96_MODE_RESPONSE_LONG  "ATV1\r"
@@ -39,7 +41,7 @@
 
 
 
-#define RS_BG96_OK              "\r\nOK\r\n"
+#define RS_BG96_OK              "OK\r\n"
 #define RS_BG96_ERROR           "\r\nERROR\r\n"
 #define RS_BG96_SIGNAL          ">"
 #define RS_BG96_STATUS_SIM      "\r\n+QSIMSTAT: 0,1\r\n\r\nOK\r\n"

@@ -25,7 +25,7 @@ st_bg96_config config_module={.send_data_device=NULL,.mode_echo=STATE_ECHO_OFF,.
 
 void test_init_driver(void)
 {   
-   TEST_ASSERT_EQUAL(FT_BG96_OK,init_driver(&config_module,send_data));
+   TEST_ASSERT_EQUAL(FT_BG96_OK,init_driver(&config_module,send_data,turn_on_bg96));
    TEST_ASSERT_EQUAL(config_module.send_data_device,send_data);
    TEST_ASSERT_EQUAL_UINT(config_module.code_error,BG96_NO_ERROR);
 }

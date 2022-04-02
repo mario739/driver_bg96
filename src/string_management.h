@@ -15,7 +15,7 @@
 #include "driver_bg96.h"
 
 em_bg96_error_handling send_data(char *cmd,char*expect,char*buffer,uint32_t timeout);
-
+void turn_on_bg96(void);
 void parse_string(char *data,char firts_caracter,char second_caracter,char *buffer);
 
 #endif

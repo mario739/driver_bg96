@@ -11,9 +11,10 @@
 
 #include "driver_bg96.h"
 
-em_bg96_error_handling init_driver(st_bg96_config *obj,pf_send_data ft_send_data_device)
+em_bg96_error_handling init_driver(st_bg96_config *obj,pf_send_data ft_send_data_device,pf_turn_on_modem ft_turn_on_modem)
 {
     obj->send_data_device=ft_send_data_device;
+    obj->turn_on_modem=ft_turn_on_modem;
     if (obj->send_data_device!=NULL)
     {
         obj->ft_resp=FT_BG96_OK;
@@ -24,7 +25,7 @@ em_bg96_error_handling init_driver(st_bg96_config *obj,pf_send_data ft_send_data
 em_bg96_error_handling get_status_modem(st_bg96_config*obj)
 {
     char buffer_receive[30]; 
-    obj->ft_resp=obj->send_data_device(CMD_BG96_STATUS_MODEM,RS_BG96_OK,buffer_receive,100);
+    obj->ft_resp=obj->send_data_device(CMD_BG96_STATUS_MODEM,RS_BG96_OK,buffer_receive,500);
     if (obj->ft_resp!=FT_BG96_OK)
     {
         obj->code_error=BG96_ERROR_STATUS_MODEM;
@@ -33,26 +34,11 @@ em_bg96_error_handling get_status_modem(st_bg96_config*obj)
 }
 em_bg96_error_handling get_status_sim(st_bg96_config *obj)
 {
-    char buffer_receive[30]={0};
-    char buffer_parse[10]={0};
-    
+    char buffer_receive[30]={0};    
     obj->ft_resp=obj->send_data_device(CMD_BG96_STATUS_SIM,RS_BG96_OK,buffer_receive,300);
-    if (FT_BG96_OK==obj->ft_resp)
+    if (FT_BG96_OK!=obj->ft_resp)
     {
-        parse_string(buffer_receive,',','\r',buffer_parse);
-        uint8_t un_data=(uint8_t)atoi(buffer_parse);
-        if (un_data==0)
-        {
-            obj->sim_comfig->sim_state=US_STATE_INSERTED;
-        }
-        else if (un_data==1)
-        {
-            obj->sim_comfig->sim_state=US_STATE_REMOVED;
-        }
-        else if (un_data==2)
-        {
-            obj->sim_comfig->sim_state=US_STATE_UNKNOWNU;
-        }    
+        obj->code_error=BG96_ERROR_STATUS_SIM;
     }
     return obj->ft_resp;
 }
@@ -83,55 +69,50 @@ em_bg96_error_handling set_format_response(st_bg96_config *obj,em_format_respons
 
 em_bg96_error_handling set_format_error(st_bg96_config *obj,em_format_error mode)
 {
-    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
     char cmd[20];
     sprintf(cmd,"AT+CMEE=%u\r",mode);
-
-    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
-    if (FT_BG96_OK==ft_resp)
+    obj->ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);
+    if (FT_BG96_OK==obj->ft_resp)
     {
         obj->format_error=mode;
     }
-    return ft_resp;
+    return obj->ft_resp;
 }
 em_bg96_error_handling set_sms_format(st_bg96_config *obj,em_sms_mode mode)
 {
-    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
     char cmd[12]="AT+CMGF=";
     strcat(cmd,(mode>0)?"1":"0");
     strcat(cmd,"\r");
-
-    ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);   
-    if (FT_BG96_OK==ft_resp)
+    obj->ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,300);   
+    if (FT_BG96_OK==obj->ft_resp)
     {
         obj->mode_sms=mode;
     }
-    return ft_resp;
+    else obj->code_error=BG96_ERROR_SET_SMS_FORMAT;
+    return obj->ft_resp;
 }
 
 em_bg96_error_handling send_sms_bg96(st_bg96_config *obj,char*number,char*message)
 {
-    em_bg96_error_handling ft_resp=FT_BG96_ERROR;
     char buffer_receive[30]={0};
     char buffer_message[256];
     char cmd[30]="AT+CMGS=\"";
     strcat(cmd,number);
     strcat(cmd,"\"\r");
     strcpy(buffer_message,message);
-    strcat(buffer_message,"\r");
-    
-    ft_resp=obj->send_data_device(cmd,RS_BG96_SIGNAL,buffer_receive,12000);
-    if (FT_BG96_OK==ft_resp)
+    strcat(buffer_message,"\x1a\r");  
+    obj->ft_resp=obj->send_data_device(cmd,RS_BG96_SIGNAL,buffer_receive,12000);
+    if (FT_BG96_OK==obj->ft_resp)
     {
-        ft_resp=obj->send_data_device(buffer_message,NULL,buffer_receive,12000);
-        if (FT_BG96_OK==ft_resp)
+        obj->ft_resp=obj->send_data_device(buffer_message,RS_BG96_OK,buffer_receive,12000);
+        if (FT_BG96_OK!=obj->ft_resp)
         {
-           ft_resp=obj->send_data_device("\x1A\r",RS_BG96_OK,buffer_receive,12000);
+            obj->code_error=BG96_ERROR_SEND_SMS;
         }
     }
-    return ft_resp;
+    return obj->ft_resp;
 }
 
 em_bg96_error_handling set_parameter_context_tcp(st_bg96_config *obj)
@@ -152,7 +133,7 @@ em_bg96_error_handling activate_context_pdp(st_bg96_config *obj)
     char buffer_receive[30]={0};
     char cmd[15];
     sprintf(cmd,"AT+QIACT=%u\r",obj->obj_tcp->context_id);
-    obj->ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,150000);
+    obj->ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,15000);
     if (obj->ft_resp!=FT_BG96_OK)
     {
         obj->code_error=BG96_ERROR_ACTIVATE_CONTEXT_PDP;
@@ -222,7 +203,7 @@ em_bg96_error_handling disconnect_server_mqtt(st_bg96_config *obj)
     char buffer_receive[30]={0};
     char cmd[50]={0};
     sprintf(cmd,"AT+QMTDISC=%u\r",obj->obj_mqtt->identifier_socket_mqtt);
-    obj->ft_resp=obj->send_data_device(cmd,RS_BG96_CERO,buffer_receive,300);
+    obj->ft_resp=obj->send_data_device(cmd,RS_BG96_CERO,buffer_receive,5000);
     if (obj->ft_resp!=FT_BG96_OK)
     {
         obj->code_error=BG96_ERROR_DISCONNECT_SERVER_MQTT;
@@ -234,7 +215,7 @@ em_bg96_error_handling publish_message(st_bg96_config *obj,char *topic,char *dat
     char buffer_receive[70]={0};
     char buffer_receive_data[70]={0};
     char cmd[50]={0};
-    char buffer_data[50]={0};
+    char buffer_data[120]={0};
     sprintf(buffer_data,"%s\x1a\r",data);
     sprintf(cmd,"AT+QMTPUB=%u,0,0,0,\"%s\"\r",obj->obj_mqtt->identifier_socket_mqtt,topic);
     obj->ft_resp=obj->send_data_device(cmd,RS_BG96_SIGNAL,buffer_receive,300);
@@ -250,34 +231,55 @@ em_bg96_error_handling publish_message(st_bg96_config *obj,char *topic,char *dat
     return obj->ft_resp;
 }
 
+em_bg96_error_handling turn_off_bg96(st_bg96_config *obj)
+{
+    char buffer_receive[30]={0};
+    char cmd[15]="AT+QPOWD\r";
+    obj->ft_resp=obj->send_data_device(cmd,RS_BG96_OK,buffer_receive,100);
+    if (obj->ft_resp!=FT_BG96_OK)
+    {
+        obj->code_error=BG96_ERROR_TURN_OFF;
+    }
+    return obj->ft_resp;
+
+}
 
 em_bg96_error_handling send_data_mqtt(st_bg96_config *obj,char *topic,char *data)
 {
-    em_states_send_data states_send_data_mqtt=INIT_SEND_DATA_MQTT;
+    em_states_send_data states_send_data_mqtt=TURN_ON_MODEM;
+    uint count=0;
     uint8_t flag_machine=1;
     while (flag_machine==1)
     {
         switch (states_send_data_mqtt)
         {
+        case TURN_ON_MODEM:
+            obj->turn_on_modem();
+            states_send_data_mqtt=INIT_SEND_DATA_MQTT;
+            break;
         case INIT_SEND_DATA_MQTT:
             if (get_status_modem(obj)==FT_BG96_OK)
-            {
                 states_send_data_mqtt=CONFIG_PDP_CONTEXT;
-                /*if (get_status_sim(obj)==FT_BG96_OK)
+            else
+            {
+                if (count==3)
                 {
-                    if (obj_sim_comfig->sim_state==US_STATE_INSERTED)
-                    {
-                        states_send_data_mqtt=CONFIG_PDP_CONTEXT;
-                    }
+                    states_send_data_mqtt=RESET_MODULE;
                 }
-                else states_send_data_mqtt=RESET_MODULE;*/
-            }
-            else states_send_data_mqtt=RESET_MODULE;
+                else count++;
+            }   
             break;
         case CONFIG_PDP_CONTEXT:
             if (set_parameter_context_tcp(obj)==FT_BG96_OK)
                     states_send_data_mqtt=ACTIVATE_PDP_CONTEXT;
-            else states_send_data_mqtt=RESET_MODULE;                       
+            else
+            {
+                if (count==3)
+                {
+                    states_send_data_mqtt=RESET_MODULE;
+                }
+                else count++;
+            }                        
             break;
         case ACTIVATE_PDP_CONTEXT:
             if (activate_context_pdp(obj)==FT_BG96_OK)
@@ -303,6 +305,10 @@ em_bg96_error_handling send_data_mqtt(st_bg96_config *obj,char *topic,char *data
             {
                 states_send_data_mqtt=DESACTIVATE_PDP_CONTEXT;
             }
+            else
+            {
+                states_send_data_mqtt=DESACTIVATE_PDP_CONTEXT;
+            }
             break;
         case DESACTIVATE_PDP_CONTEXT:
             if (desactivate_context_pdp(obj)==FT_BG96_OK)
@@ -310,8 +316,16 @@ em_bg96_error_handling send_data_mqtt(st_bg96_config *obj,char *topic,char *data
                 states_send_data_mqtt=RESET_MODULE;
                 break;
             }
+            else
+            {
+                states_send_data_mqtt=RESET_MODULE;
+            }
         case RESET_MODULE:
-            flag_machine=0;
+            if (turn_off_bg96(obj)==FT_BG96_OK)
+            {
+                flag_machine=0;
+            }
+            flag_machine=0; 
             break;
         default:
             flag_machine=0;
@@ -319,4 +333,41 @@ em_bg96_error_handling send_data_mqtt(st_bg96_config *obj,char *topic,char *data
         }   
     }
     return obj->ft_resp;   
+}
+em_bg96_error_handling send_data_sms(st_bg96_config *obj,em_sms_mode mode,char *number,char *message)
+{
+    uint8_t flag_send_sms=1;
+    em_states_send_sms states_send_sms=STATUS_MODEM;
+    while (flag_send_sms==1)
+    {
+        switch (states_send_sms)
+        {
+        case STATUS_MODEM:
+            if (get_status_modem(obj)==FT_BG96_OK)
+                states_send_sms=STATUS_SIM;
+            else states_send_sms=ERROR_SEND_DATA;
+            break;
+        case STATUS_SIM:
+            if (get_status_sim(obj)==FT_BG96_OK)
+                states_send_sms=SET_MODE_TEXT;
+            else states_send_sms=ERROR_SEND_DATA;
+            break;
+        case SET_MODE_TEXT:
+            if (set_sms_format(obj,mode)==FT_BG96_OK)
+                states_send_sms=SEND_DATA_SMS;
+            else states_send_sms=ERROR_SEND_DATA;
+            break;
+        case SEND_DATA_SMS:
+            if (send_sms_bg96(obj,number,message)==FT_BG96_OK)
+                flag_send_sms=0;
+            break;
+        case ERROR_SEND_DATA:
+            flag_send_sms=0;
+            break;
+        default:
+            flag_send_sms=0;
+            break;
+        }
+    }
+    
 }

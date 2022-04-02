@@ -29,7 +29,7 @@ typedef enum
 } em_bg96_error_handling;
 
 typedef em_bg96_error_handling(*pf_send_data)(char*,char*,char*,uint32_t);//comando,respuest,buffer,time
-
+typedef void (*pf_turn_on_modem)(void);
 typedef enum
 {
     MODE_PDU=0,
@@ -69,6 +69,7 @@ typedef enum
 
 typedef enum
 {
+    TURN_ON_MODEM,
     INIT_SEND_DATA_MQTT,
     RESET_MODULE,
     CONFIG_PDP_CONTEXT,
@@ -81,6 +82,14 @@ typedef enum
 }em_states_send_data;
 
 
+typedef enum
+{
+    STATUS_MODEM,
+    STATUS_SIM,
+    SET_MODE_TEXT,
+    SEND_DATA_SMS,
+    ERROR_SEND_DATA,
+}em_states_send_sms;
 
 typedef struct 
 {
@@ -113,6 +122,7 @@ typedef struct
 typedef struct 
 {
     pf_send_data       send_data_device;
+    pf_turn_on_modem   turn_on_modem;
     em_status_echo     mode_echo;
     em_format_response format_response;
     em_format_error    format_error;
@@ -124,7 +134,7 @@ typedef struct
     st_config_parameters_mqtt *obj_mqtt;
 }st_bg96_config;
 
-em_bg96_error_handling init_driver(st_bg96_config *obj,pf_send_data ft_send_data_device);
+em_bg96_error_handling init_driver(st_bg96_config *obj,pf_send_data ft_send_data_device,pf_turn_on_modem ft_turn_on_modem);
 
 em_bg96_error_handling get_status_modem(st_bg96_config *obj);
 em_bg96_error_handling get_status_sim(st_bg96_config *obj);
