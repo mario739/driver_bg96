@@ -9,9 +9,8 @@
  * 
  */
 
-#ifndef COMMANDS
-#define COMMANDS
-
+#ifndef COMMANDS_H
+#define COMMANDS_H
 
 #define BG96_NO_ERROR            0x0U   
 #define BG96_ERROR_INIT          0x1U
@@ -33,7 +32,7 @@
 #define BG96_ERROR_PDP_CONTEXT 0x17U
 #define BG96_ERROR_INFO_PRODUCTO 0x18U
 #define BG96_ERROR_SET_MODE_ERROR 0x19U
-
+#define BG96_ERROR_SET_PARAMETER_MQTT 0x20u 
 
 #define CMD_BG96_STATUS_MODEM   "AT\r"
 #define CMD_BG96_STATUS_SIM     "AT+CPIN?\r"
@@ -42,9 +41,6 @@
 #define CMD_BG96_MODE_ECHO_ON   "ATE1\r"
 #define CMD_BG96_MODE_RESPONSE_LONG  "ATV1\r"
 #define CMD_BG96_MODE_RESPONSE_SHORT "ATV0\r"
-
-
-
 
 #define RS_BG96_OK              "OK\r\n"
 #define RS_BG96_ERROR           "\r\nERROR\r\n"
