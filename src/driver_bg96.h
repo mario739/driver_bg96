@@ -40,6 +40,7 @@ typedef enum
     CONNECT_BROKER_MQTT,
     PUB_MQTT,
     DISCONNECT_BROKER_MQTT,
+    CLOSE_BROKEN_MQTT,
     ERROR,
 }em_states_send_data;
 

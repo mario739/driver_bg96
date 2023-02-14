@@ -183,7 +183,7 @@ em_bg96_error_handling send_sms_bg96(st_bg96_config *self,char*number,char*messa
 em_bg96_error_handling set_parameter_context_tcp(st_bg96_config *self)
 {   
     em_bg96_error_handling ft_resp=FT_BG96_OK;
-    char buffer_resp[30]={0}; 
+    char buffer_resp[50]={0}; 
     char cmd[100];
     sprintf(cmd,"AT+QICSGP=%u,%u,\"%s\",\"%s\",\"%s\",%u\r",self->self_tcp.context_id,self->self_tcp.context_type,self->self_tcp.tcp_apn,self->self_tcp.tcp_username,self->self_tcp.tcp_password,self->self_tcp.method_authentication);
     ft_resp=self->send_data_device(cmd,RS_BG96_OK,buffer_resp,300);
@@ -203,10 +203,10 @@ em_bg96_error_handling set_parameter_context_tcp(st_bg96_config *self)
 em_bg96_error_handling activate_context_pdp(st_bg96_config *self)
 {
     em_bg96_error_handling ft_resp=FT_BG96_OK;
-    char buffer_resp[30]={0}; 
-    char cmd[15];
+    char buffer_resp[60]={0}; 
+    char cmd[30];
     sprintf(cmd,"AT+QIACT=%u\r",self->self_tcp.context_id);
-    ft_resp=self->send_data_device(cmd,RS_BG96_OK,buffer_resp,150000);
+    ft_resp=self->send_data_device(cmd,RS_BG96_OK,buffer_resp,15000);
     if (ft_resp!=FT_BG96_OK)
     {
         self->last_error=BG96_ERROR_ACTIVATE_CONTEXT_PDP;
@@ -250,9 +250,9 @@ em_bg96_error_handling set_parameters_mqtt(st_bg96_config *self)
 em_bg96_error_handling open_client_mqtt(st_bg96_config *self)
 {
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
-    char buffer_resp[30]={0}; 
-    char cmd[50];
-    sprintf(cmd,"AT+QMTOPEN=%u,%s,%u\r",self->self_mqtt.identifier_socket_mqtt,self->self_mqtt.host_name,self->self_mqtt.port);
+    char buffer_resp[200]={0}; 
+    char cmd[100];
+    sprintf(cmd,"AT+QMTOPEN=%u,%s,%lu\r",self->self_mqtt.identifier_socket_mqtt,self->self_mqtt.host_name,self->self_mqtt.port);
     ft_resp=self->send_data_device(cmd,RS_BG96_CERO,buffer_resp,75000);
     if (ft_resp!=FT_BG96_OK)
     {
@@ -263,10 +263,10 @@ em_bg96_error_handling open_client_mqtt(st_bg96_config *self)
 em_bg96_error_handling close_client_mqtt(st_bg96_config *self)
 {
     em_bg96_error_handling ft_resp=FT_BG96_ERROR;
-    char buffer_resp[30]={0}; 
+    char buffer_resp[50]={0}; 
     char cmd[50];
     sprintf(cmd,"AT+QMTCLOSE=%u\r",self->self_mqtt.identifier_socket_mqtt);
-    ft_resp=self->send_data_device(cmd,RS_BG96_CERO,buffer_resp,300);
+    ft_resp=self->send_data_device(cmd,RS_BG96_CERO,buffer_resp,3000);
     if (ft_resp!=FT_BG96_OK)
     {
         self->last_error=BG96_ERROR_CLOSE_CLIENT_MQTT;
@@ -311,7 +311,7 @@ em_bg96_error_handling publish_message(st_bg96_config *self,char *topic,char *da
     char buffer_data[120]={0};
     sprintf(buffer_data,"%s\x1a\r",data);
     sprintf(cmd,"AT+QMTPUB=%u,0,0,0,\"%s\"\r",self->self_mqtt.identifier_socket_mqtt,topic);
-    ft_resp=self->send_data_device(cmd,RS_BG96_SIGNAL,buffer_resp,300);
+    ft_resp=self->send_data_device(cmd,RS_BG96_SIGNAL,buffer_resp,3000);
     if (FT_BG96_OK==ft_resp)
     {
         ft_resp=self->send_data_device(buffer_data,RS_BG96_CERO,buffer_resp,15000);
@@ -350,7 +350,7 @@ em_bg96_error_handling send_data_mqtt(st_bg96_config *self,char *topic,char *dat
         case OPEN_CONNECTION_MQTT:
             if (open_client_mqtt(self)==FT_BG96_OK)
                 states_send_data_mqtt=CONNECT_BROKER_MQTT;
-            else states_send_data_mqtt=ERROR;
+            else states_send_data_mqtt=CLOSE_BROKEN_MQTT;
             break;
         case CONNECT_BROKER_MQTT:
             if (connect_server_mqtt(self)==FT_BG96_OK)
@@ -358,14 +358,30 @@ em_bg96_error_handling send_data_mqtt(st_bg96_config *self,char *topic,char *dat
             else states_send_data_mqtt=DISCONNECT_BROKER_MQTT;
             break;
         case PUB_MQTT:
-            publish_message(self,topic,data);
-            states_send_data_mqtt=DISCONNECT_BROKER_MQTT;            
-            break;
+        if (publish_message(self,topic,data)==FT_BG96_OK)
+        {
+            states_send_data_mqtt=DISCONNECT_BROKER_MQTT;
+        }
+        break;
         case DISCONNECT_BROKER_MQTT:
             if (disconnect_server_mqtt(self)==FT_BG96_OK)
+            {
                 flag_machine=0;
-            else states_send_data_mqtt=ERROR;
+            }
+            else {
+                states_send_data_mqtt=ERROR;
+            }
+                
             break;
+        case CLOSE_BROKEN_MQTT:
+            if (close_client_mqtt(self)==FT_BG96_OK)
+            {
+                 flag_machine=0;
+            }
+            else{
+                states_send_data_mqtt=DISCONNECT_BROKER_MQTT;
+            }
+        break;
         case ERROR:
             flag_machine=0;
             ft_resp=FT_BG96_ERROR;
