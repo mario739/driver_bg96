@@ -369,7 +369,7 @@ em_bg96_error_handling send_data_mqtt(st_bg96_config *self,char *topic,char *dat
                 flag_machine=0;
             }
             else {
-                states_send_data_mqtt=ERROR;
+                states_send_data_mqtt=ERROR1;
             }
                 
             break;
@@ -382,7 +382,7 @@ em_bg96_error_handling send_data_mqtt(st_bg96_config *self,char *topic,char *dat
                 states_send_data_mqtt=DISCONNECT_BROKER_MQTT;
             }
         break;
-        case ERROR:
+        case ERROR1:
             flag_machine=0;
             ft_resp=FT_BG96_ERROR;
             break;

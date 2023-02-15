@@ -41,7 +41,7 @@ typedef enum
     PUB_MQTT,
     DISCONNECT_BROKER_MQTT,
     CLOSE_BROKEN_MQTT,
-    ERROR,
+    ERROR1,
 }em_states_send_data;
 
 typedef struct 

@@ -137,7 +137,7 @@ void test_set_parameters_context_tcp(void)
 void test_activate_context_pdp(void)
 {
    char buffer_resp[30]={0};
-   send_data_ExpectAndReturn("AT+QIACT=1\r",RS_BG96_OK,buffer_resp,150000,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QIACT=1\r",RS_BG96_OK,buffer_resp,15000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,activate_context_pdp(&config_module));
 }
 
@@ -165,7 +165,7 @@ void test_open_client_mqtt(void)
 void test_close_client_mqtt(void)
 {
    char buffer_resp[30]={0};
-   send_data_ExpectAndReturn("AT+QMTCLOSE=0\r",RS_BG96_CERO,buffer_resp,300,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QMTCLOSE=0\r",RS_BG96_CERO,buffer_resp,3000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,close_client_mqtt(&config_module));
 }
 
@@ -188,7 +188,7 @@ void test_publish_message(void)
    char buffer_resp[30]={0};
    char topic[19]="/v1.6/devices/demo";
    char data[25]="{\"demo\":10,\"humedad\":60}";
-   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,300,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_OK);
    send_data_ExpectAndReturn("{\"demo\":10,\"humedad\":60}\x1a\r",RS_BG96_CERO,buffer_resp,15000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,publish_message(&config_module,topic,data));
 }
@@ -207,7 +207,7 @@ void test_state_machine_send_data(void)
    char data[25]="{\"demo\":10,\"humedad\":60}";
    send_data_ExpectAndReturn("AT+QMTOPEN=0,\"industrial.api.ubidots.com\",1883\r",RS_BG96_CERO,buffer_resp,75000,FT_BG96_OK);
    send_data_ExpectAndReturn("AT+QMTCONN=0,\"123456789\",\"\",\"\"\r",RS_BG96_CERO,buffer_resp,5000,FT_BG96_OK);
-   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,300,FT_BG96_OK);
+   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_OK);
    send_data_ExpectAndReturn("{\"demo\":10,\"humedad\":60}\x1a\r",RS_BG96_CERO,buffer_resp,15000,FT_BG96_OK);
    send_data_ExpectAndReturn("AT+QMTDISC=0\r",RS_BG96_CERO,buffer_resp,5000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,send_data_mqtt(&config_module,topic,data));
