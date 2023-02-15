@@ -50,13 +50,6 @@ em_bg96_error_handling get_information_product(st_bg96_config *self)
     {
         self->last_error=BG96_ERROR_INFO_PRODUCTO;
     }
-    else
-    {   
-        // self->info_product.mark=(uint8_t)"data";
-        // self->info_product.model="";
-        // self->info_product.revision="";
-        //procesar caracteres 
-    }
     return ft_resp;
     
 }
