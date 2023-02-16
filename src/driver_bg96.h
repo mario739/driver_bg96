@@ -1,6 +1,6 @@
 /**
  * @file driver_bg96.h
- * @author your name (you@domain.com)
+ * @author Mario Aguilar Montoya (fernandoaguilar731010@gmail.com)
  * @brief 
  * @version 0.1
  * @date 2022-01-20
@@ -8,17 +8,13 @@
  * @copyright Copyright (c) 2022
  * 
  */
-
-
-
 #ifndef DRIVER_BG96_H
 #define DRIVER_BG96_H
 
-/*private includ*/
+/*private includes*/
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include "commands.h"
 
 
@@ -31,9 +27,18 @@ typedef enum
   FT_BG96_TIMEOUT=3,
 } em_bg96_error_handling;
 
-typedef em_bg96_error_handling(*pf_send_data)(char*,char*,char*,uint32_t);//comando,respuest,buffer,time
+/**
+ * @brief Puntero a funcion para enviar datos 
+ * 
+ * 
+ */
+typedef em_bg96_error_handling(*pf_send_data)(char*,char*,char*,uint32_t);
 
-
+/**
+ * @brief Enumerador para la maquina des estados 
+ * del conecion mqtt
+ * 
+ */
 typedef enum
 {
     OPEN_CONNECTION_MQTT,
@@ -79,6 +84,7 @@ typedef struct
     st_config_context_tcp self_tcp;
     st_info_product info_product;
     uint32_t           last_error; 
+    char buffer_resp[300];
 }st_bg96_config;
 
 

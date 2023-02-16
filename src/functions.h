@@ -1,6 +1,6 @@
 /**
  * @file string_management.h
- * @author your name (you@domain.com)
+ * @author Mario Aguilar Montoya (fernandoaguilar731010@gmail.com)
  * @brief 
  * @version 0.1
  * @date 2022-01-29
