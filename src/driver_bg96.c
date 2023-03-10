@@ -336,52 +336,24 @@ em_bg96_error_handling turn_off_bg96(st_bg96_config *self)
 em_bg96_error_handling send_data_mqtt(st_bg96_config *self,char *topic,char *data)
 {
     em_bg96_error_handling ft_resp=FT_BG96_OK;
-    em_states_send_data states_send_data_mqtt=OPEN_CONNECTION_MQTT;
+    em_states_send_data states_send_data_mqtt=PUB_MQTT;
     uint8_t flag_machine=1;
     while (flag_machine==1)
     {
         switch (states_send_data_mqtt)
         {
-        case OPEN_CONNECTION_MQTT:
-            if (open_client_mqtt(self)==FT_BG96_OK)
-                states_send_data_mqtt=CONNECT_BROKER_MQTT;
-            else states_send_data_mqtt=CLOSE_BROKEN_MQTT;
-            break;
-        case CONNECT_BROKER_MQTT:
-            if (connect_server_mqtt(self)==FT_BG96_OK)
-                states_send_data_mqtt=PUB_MQTT;
-            else states_send_data_mqtt=DISCONNECT_BROKER_MQTT;
-            break;
-        case PUB_MQTT:
-        if (publish_message(self,topic,data)==FT_BG96_OK)
-        {
-            states_send_data_mqtt=CLOSE_BROKEN_MQTT;
-        }
-        break;
-        case DISCONNECT_BROKER_MQTT:
-            if (disconnect_server_mqtt(self)==FT_BG96_OK)
-            {
-            	flag_machine=0;
-            }
-            else {
-                states_send_data_mqtt=ERROR1;
-            }
-                
-            break;
-        case CLOSE_BROKEN_MQTT:
-            if (close_client_mqtt(self)==FT_BG96_OK)
-            {
-            	states_send_data_mqtt=DISCONNECT_BROKER_MQTT;
-            }
-            else{
-                states_send_data_mqtt=ERROR1;
-            }
-        break;
+        	case PUB_MQTT:
+				if (publish_message(self,topic,data)==FT_BG96_OK)
+				{
+					flag_machine=0;
+				}
+				else
+				{
+					states_send_data_mqtt=ERROR1;
+				}
+			break;
         case ERROR1:
-            flag_machine=0;
-            if (self->last_error==BG96_ERROR_OPEN_CLIENT_MQTT || self->last_error==BG96_ERROR_CLOSE_CLIENT_MQTT){
-                self->f_reset_modem();
-			}
+        	flag_machine=0;
             ft_resp=FT_BG96_ERROR;
             break;
         default:
