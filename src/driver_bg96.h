@@ -1,6 +1,6 @@
 /**
  * @file driver_bg96.h
- * @author your name (you@domain.com)
+ * @author Mario Aguilar Montoya (fernandoaguilar731010@gmail.com)
  * @brief 
  * @version 0.1
  * @date 2022-01-20
@@ -8,17 +8,13 @@
  * @copyright Copyright (c) 2022
  * 
  */
-
-
-
 #ifndef DRIVER_BG96_H
 #define DRIVER_BG96_H
 
-/*private includ*/
+/*private includes*/
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include "commands.h"
 
 
@@ -31,9 +27,19 @@ typedef enum
   FT_BG96_TIMEOUT=3,
 } em_bg96_error_handling;
 
-typedef em_bg96_error_handling(*pf_send_data)(char*,char*,char*,uint32_t);//comando,respuest,buffer,time
+/**
+ * @brief Puntero a funcion para enviar datos 
+ * 
+ * 
+ */
+typedef em_bg96_error_handling(*pf_send_data)( const char*,const char*,char*,uint32_t);
 
-
+typedef void(*pf_reset_modem)(void);
+/**
+ * @brief Enumerador para la maquina des estados 
+ * del conecion mqtt
+ * 
+ */
 typedef enum
 {
     OPEN_CONNECTION_MQTT,
@@ -43,6 +49,18 @@ typedef enum
     CLOSE_BROKEN_MQTT,
     ERROR1,
 }em_states_send_data;
+
+
+typedef enum{
+	SERVER_MQTT_UP,
+	SERVER_MQTT_DOWN,
+}em_state_server_mqtt_conection;
+
+typedef enum
+{
+    ON,
+    OFF,
+}em_status_modem;
 
 typedef struct 
 {
@@ -63,6 +81,7 @@ typedef struct
     uint32_t port;
     char *mqtt_password;
     char *mqtt_client_id;
+
 }st_config_parameters_mqtt;
 
 typedef struct 
@@ -74,16 +93,22 @@ typedef struct
 
 typedef struct 
 {
-    pf_send_data       send_data_device;
+    em_status_modem  status_modem;
+    em_state_server_mqtt_conection status_mqtt_server;
+    pf_send_data    send_data_device;
+    pf_reset_modem  f_reset_modem; 
     st_config_parameters_mqtt self_mqtt;
     st_config_context_tcp self_tcp;
     st_info_product info_product;
-    uint32_t           last_error; 
+    uint8_t           last_error;
+    char buffer_resp [100];
+    char *current_cmd;
+    em_bg96_error_handling ft_resp;
 }st_bg96_config;
 
 
 
-em_bg96_error_handling init_driver(st_bg96_config *self,pf_send_data ft_send_data_device);
+em_bg96_error_handling init_driver(st_bg96_config *self,pf_send_data ft_send_data_device, pf_reset_modem ft_reset_modem);
 em_bg96_error_handling turn_off_bg96(st_bg96_config *self);
 
 em_bg96_error_handling get_status_modem(st_bg96_config *self);

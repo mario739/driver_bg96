@@ -14,5 +14,6 @@
 
 #include "driver_bg96.h"
 
-em_bg96_error_handling send_data(char *cmd,char*expect,char* resp,uint32_t timeout);
+em_bg96_error_handling send_data(const char* cmd,const char*expect,char* resp,uint32_t timeout);
+void reset_fun(void);
 #endif

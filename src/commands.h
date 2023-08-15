@@ -1,6 +1,6 @@
 /**
  * @file commands.h
- * @author your name (you@domain.com)
+ * @author Mario Aguilar Montoya (fernandoaguilar731010@gmail.com)
  * @brief 
  * @version 0.1
  * @date 2022-01-20
@@ -33,25 +33,4 @@
 #define BG96_ERROR_INFO_PRODUCTO 0x18U
 #define BG96_ERROR_SET_MODE_ERROR 0x19U
 #define BG96_ERROR_SET_PARAMETER_MQTT 0x20u 
-
-#define CMD_BG96_STATUS_MODEM   "AT\r"
-#define CMD_BG96_STATUS_SIM     "AT+CPIN?\r"
-#define CMD_BG96_GET_INFO_PRODUCT     "ATI\r"
-#define CMD_BG96_MODE_ECHO_OFF  "ATE0\r"
-#define CMD_BG96_MODE_ECHO_ON   "ATE1\r"
-#define CMD_BG96_MODE_RESPONSE_LONG  "ATV1\r"
-#define CMD_BG96_MODE_RESPONSE_SHORT "ATV0\r"
-
-#define RS_BG96_OK              "OK\r\n"
-#define RS_BG96_ERROR           "\r\nERROR\r\n"
-#define RS_BG96_SIGNAL          ">"
-#define RS_BG96_STATUS_SIM      "\r\n+QSIMSTAT: 0,1\r\n\r\nOK\r\n"
-#define RS_BG96_CERO            "0\r\n"
-
-#define CMD_TEST_BG96_FORMAT_ERROR  "AT+CMEE=2\r"
-#define CMD_TEST_BG96_MODE_SMS      "AT+CMGF=1\r"
-#define CMD_BG96_STATUS_PDP_CONTEXT "AT+QIACT?\r"
-#define CMD_RESPONDE_SMS "+CMGF:0\r\n\r\nOK\r\n"
-#define CMD_RESPONDE_SMS2 "+CMGF:1\r\n\r\nOK\r\n"
-#define TS_RS_STATUS_SIM  "\r\n+QSIMSTAT: 0,1\r\n\r\nOK\r\n"
 #endif
