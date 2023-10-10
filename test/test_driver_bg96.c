@@ -78,7 +78,16 @@ void test_get_status_pdp_context(void)
 
    send_data_ExpectAndReturn(CMD_BG96_STATUS_PDP_CONTEXT,RS_BG96_OK,buffer_resp,1000,FT_BG96_ERROR);
    TEST_ASSERT_EQUAL(FT_BG96_ERROR,get_status_pdp_context(&config_module));
+}
 
+void test_sed_mode_echo_ok(void)
+{
+   char buffer_resp[100]={0};
+   send_data_ExpectAndReturn(CMD_BG96_MODE_ECHO_OFF,RS_BG96_OK,buffer_resp,300,FT_BG96_OK);
+   TEST_ASSERT_EQUAL(FT_BG96_OK,set_mode_echo(&config_module,0));
+
+   send_data_ExpectAndReturn(CMD_BG96_MODE_ECHO_OFF,RS_BG96_OK,buffer_resp,300,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,set_mode_echo(&config_module,0));
 }
 
 void test_set_format_response(void)
@@ -125,6 +134,10 @@ void test_send_sms_bg96(void)
    send_data_ExpectAndReturn("AT+CMGS=\"72950576\"\r",RS_BG96_SIGNAL,buffer_resp,12000,FT_BG96_ERROR);
    TEST_ASSERT_EQUAL(FT_BG96_ERROR,send_sms_bg96(&config_module,"72950576","HOLA"));
 
+   send_data_ExpectAndReturn("AT+CMGS=\"72950576\"\r",RS_BG96_SIGNAL,buffer_resp,12000,FT_BG96_OK);
+   send_data_ExpectAndReturn("HOLA\x1a\r",RS_BG96_OK,buffer_resp,12000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,send_sms_bg96(&config_module,"72950576","HOLA"));
+
 }
 
 void test_set_parameters_context_tcp(void)
@@ -132,6 +145,9 @@ void test_set_parameters_context_tcp(void)
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QICSGP=1,1,\"4g.entel\",\"\",\"\",1\r",RS_BG96_OK,buffer_resp,3000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,set_parameter_context_tcp(&config_module));
+
+   send_data_ExpectAndReturn("AT+QICSGP=1,1,\"4g.entel\",\"\",\"\",1\r",RS_BG96_OK,buffer_resp,3000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,set_parameter_context_tcp(&config_module));
 }
 
 void test_activate_context_pdp(void)
@@ -139,6 +155,9 @@ void test_activate_context_pdp(void)
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QIACT=1\r",RS_BG96_OK,buffer_resp,15000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,activate_context_pdp(&config_module));
+
+   send_data_ExpectAndReturn("AT+QIACT=1\r",RS_BG96_OK,buffer_resp,15000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,activate_context_pdp(&config_module));
 }
 
 void test_desactivate_context_pdp(void)
@@ -146,6 +165,9 @@ void test_desactivate_context_pdp(void)
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QIDEACT=1\r",RS_BG96_OK,buffer_resp,4000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,desactivate_context_pdp(&config_module));
+
+   send_data_ExpectAndReturn("AT+QIDEACT=1\r",RS_BG96_OK,buffer_resp,4000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,desactivate_context_pdp(&config_module));
 }
 
 void test_set_parameters_MQTT(void)
@@ -153,6 +175,9 @@ void test_set_parameters_MQTT(void)
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QMTCFG=\"pdpid\",0,1\r",RS_BG96_OK,buffer_resp,300,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,set_parameters_mqtt(&config_module));
+
+   send_data_ExpectAndReturn("AT+QMTCFG=\"pdpid\",0,1\r",RS_BG96_OK,buffer_resp,300,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,set_parameters_mqtt(&config_module));
 }
 
 void test_open_client_mqtt(void)
@@ -160,6 +185,9 @@ void test_open_client_mqtt(void)
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QMTOPEN=0,\"industrial.api.ubidots.com\",1883\r",RS_BG96_CERO,buffer_resp,75000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,open_client_mqtt(&config_module));
+
+   send_data_ExpectAndReturn("AT+QMTOPEN=0,\"industrial.api.ubidots.com\",1883\r",RS_BG96_CERO,buffer_resp,75000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,open_client_mqtt(&config_module));
 }
 
 void test_close_client_mqtt(void)
@@ -167,6 +195,9 @@ void test_close_client_mqtt(void)
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QMTCLOSE=0\r",RS_BG96_OK,buffer_resp,3000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,close_client_mqtt(&config_module));
+
+   send_data_ExpectAndReturn("AT+QMTCLOSE=0\r",RS_BG96_OK,buffer_resp,3000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,close_client_mqtt(&config_module));
 }
 
 void test_connect_server_mqtt(void)
@@ -174,6 +205,9 @@ void test_connect_server_mqtt(void)
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QMTCONN=0,\"123a56cb9\",\"BBFF-YymzfOGNgPBLoxxhddQT99r9Wq77rL\",\"BBFF-YymzfOGNgPBLoxxhddQT99r9Wq77rL\"\r",RS_BG96_CERO,buffer_resp,10000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,connect_server_mqtt(&config_module));
+
+   send_data_ExpectAndReturn("AT+QMTCONN=0,\"123a56cb9\",\"BBFF-YymzfOGNgPBLoxxhddQT99r9Wq77rL\",\"BBFF-YymzfOGNgPBLoxxhddQT99r9Wq77rL\"\r",RS_BG96_CERO,buffer_resp,10000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,connect_server_mqtt(&config_module));
 }
 
 void test_disconnect_server_mqtt(void)
@@ -181,6 +215,9 @@ void test_disconnect_server_mqtt(void)
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QMTDISC=0\r",RS_BG96_OK,buffer_resp,5000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,disconnect_server_mqtt(&config_module));
+
+   send_data_ExpectAndReturn("AT+QMTDISC=0\r",RS_BG96_OK,buffer_resp,5000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,disconnect_server_mqtt(&config_module));
 }
 
 void test_publish_message(void)
@@ -191,13 +228,23 @@ void test_publish_message(void)
    send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_OK);
    send_data_ExpectAndReturn("{\"demo\":10,\"humedad\":60}\x1a\r",RS_BG96_CERO,buffer_resp,15000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,publish_message(&config_module,topic,data));
+
+   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,publish_message(&config_module,topic,data));
+
+   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_OK);
+   send_data_ExpectAndReturn("{\"demo\":10,\"humedad\":60}\x1a\r",RS_BG96_CERO,buffer_resp,15000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,publish_message(&config_module,topic,data));
 }
 
 void test_turn_off_bg96(void)
 {
    char buffer_resp[30]={0};
    send_data_ExpectAndReturn("AT+QPOWD\r",RS_BG96_OK,buffer_resp,1000,FT_BG96_OK);
-   TEST_ASSERT_EQUAL(FT_BG96_OK,turn_off_bg96(&config_module));    
+   TEST_ASSERT_EQUAL(FT_BG96_OK,turn_off_bg96(&config_module)); 
+
+   send_data_ExpectAndReturn("AT+QPOWD\r",RS_BG96_OK,buffer_resp,1000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,turn_off_bg96(&config_module));     
 }
 
 void test_state_machine_send_data(void)
@@ -208,5 +255,9 @@ void test_state_machine_send_data(void)
    send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_OK);
    send_data_ExpectAndReturn("{\"demo\":10,\"humedad\":60}\x1a\r",RS_BG96_CERO,buffer_resp,15000,FT_BG96_OK);
    TEST_ASSERT_EQUAL(FT_BG96_OK,send_data_mqtt(&config_module,topic,data));
+
+   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,send_data_mqtt(&config_module,topic,data));
+
 }
 
