@@ -34,6 +34,10 @@ void test_init_driver(void)
    TEST_ASSERT_EQUAL(config_module.send_data_device,send_data);
    TEST_ASSERT_EQUAL(config_module.f_reset_modem,reset_fun);
    TEST_ASSERT_EQUAL_UINT(config_module.last_error,BG96_NO_ERROR);
+
+
+   TEST_ASSERT_EQUAL(FT_BG96_OK,init_driver(&config_module,NULL,NULL));
+
 }
 
 void test_get_status_modem(void)
@@ -88,6 +92,12 @@ void test_sed_mode_echo_ok(void)
 
    send_data_ExpectAndReturn(CMD_BG96_MODE_ECHO_OFF,RS_BG96_OK,buffer_resp,300,FT_BG96_ERROR);
    TEST_ASSERT_EQUAL(FT_BG96_ERROR,set_mode_echo(&config_module,0));
+
+   send_data_ExpectAndReturn(CMD_BG96_MODE_ECHO_ON,RS_BG96_OK,buffer_resp,300,FT_BG96_OK);
+   TEST_ASSERT_EQUAL(FT_BG96_OK,set_mode_echo(&config_module,1));
+
+   send_data_ExpectAndReturn(CMD_BG96_MODE_ECHO_ON,RS_BG96_OK,buffer_resp,300,FT_BG96_ERROR);
+   TEST_ASSERT_EQUAL(FT_BG96_ERROR,set_mode_echo(&config_module,1));
 }
 
 void test_set_format_response(void)
@@ -99,6 +109,9 @@ void test_set_format_response(void)
    send_data_ExpectAndReturn(CMD_BG96_MODE_RESPONSE_LONG,RS_BG96_OK,buffer_resp,300,FT_BG96_ERROR);
    TEST_ASSERT_EQUAL(FT_BG96_ERROR,set_format_response(&config_module,1));
    TEST_ASSERT_EQUAL(BG96_ERROR_SET_FORMAT_RESPONSE,config_module.last_error);
+
+   send_data_ExpectAndReturn(CMD_BG96_MODE_RESPONSE_SHORT,RS_BG96_OK,buffer_resp,300,FT_BG96_OK);
+   TEST_ASSERT_EQUAL(FT_BG96_OK,set_format_response(&config_module,0));
 }
 
 void test_set_format_error()
@@ -111,6 +124,7 @@ void test_set_format_error()
    TEST_ASSERT_EQUAL(FT_BG96_ERROR,set_format_error(&config_module,2));
    
    TEST_ASSERT_EQUAL(BG96_ERROR_SET_MODE_ERROR ,config_module.last_error);
+
 }
 
 void test_set_sms_format(void)
@@ -121,6 +135,9 @@ void test_set_sms_format(void)
 
   send_data_ExpectAndReturn("AT+CMGF=1\r",RS_BG96_OK,buffer_resp,300,FT_BG96_ERROR);
   TEST_ASSERT_EQUAL(FT_BG96_ERROR,set_sms_format(&config_module,1));
+
+  send_data_ExpectAndReturn("AT+CMGF=0\r",RS_BG96_OK,buffer_resp,300,FT_BG96_OK);
+  TEST_ASSERT_EQUAL(FT_BG96_OK,set_sms_format(&config_module,0));
   
 }
 
