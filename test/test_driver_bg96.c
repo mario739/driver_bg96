@@ -260,17 +260,5 @@ void test_turn_off_bg96(void)
    TEST_ASSERT_EQUAL(FT_BG96_ERROR,turn_off_bg96(&config_module));     
 }
 
-void test_state_machine_send_data(void)
-{
-   char buffer_resp[30]={0};
-   char topic[19]="/v1.6/devices/demo";
-   char data[25]="{\"demo\":10,\"humedad\":60}";
-   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_OK);
-   send_data_ExpectAndReturn("{\"demo\":10,\"humedad\":60}\x1a\r",RS_BG96_CERO,buffer_resp,15000,FT_BG96_OK);
-   TEST_ASSERT_EQUAL(FT_BG96_OK,send_data_mqtt(&config_module,topic,data));
 
-   send_data_ExpectAndReturn("AT+QMTPUB=0,0,0,0,\"/v1.6/devices/demo\"\r",RS_BG96_SIGNAL,buffer_resp,3000,FT_BG96_ERROR);
-   TEST_ASSERT_EQUAL(FT_BG96_ERROR,send_data_mqtt(&config_module,topic,data));
-
-}
 

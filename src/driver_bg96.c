@@ -362,34 +362,3 @@ em_bg96_error_handling turn_off_bg96(st_bg96_config *self)
     return self->ft_resp;
 
 }
-
-em_bg96_error_handling send_data_mqtt(st_bg96_config *self,char *topic,char *data)
-{
-    self->ft_resp=FT_BG96_OK;
-    em_states_send_data states_send_data_mqtt=PUB_MQTT;
-    uint8_t flag_machine=1;
-    while (flag_machine==1)
-    {
-        switch (states_send_data_mqtt)
-        {
-        	case PUB_MQTT:
-				if (publish_message(self,topic,data)==FT_BG96_OK)
-				{
-					flag_machine=0;
-				}
-				else
-				{
-					states_send_data_mqtt=ERROR1;
-				}
-			break;
-        case ERROR1:
-        	flag_machine=0;
-            self->ft_resp=FT_BG96_ERROR;
-            break;
-        default:
-            flag_machine=0;
-            break;
-        }   
-    }
-    return self->ft_resp;   
-}
