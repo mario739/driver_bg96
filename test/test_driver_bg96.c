@@ -35,16 +35,13 @@ void test_init_driver(void)
    TEST_ASSERT_EQUAL(config_module.f_reset_modem,reset_fun);
    TEST_ASSERT_EQUAL_UINT(config_module.last_error,BG96_NO_ERROR);
 
-
    TEST_ASSERT_EQUAL(FT_BG96_OK,init_driver(&config_module,NULL,NULL));
-
 }
 
 void test_get_status_modem(void)
 {
    char buffer_resp[20]={0};
    send_data_ExpectAndReturn(CMD_BG96_STATUS_MODEM,RS_BG96_OK,buffer_resp,1000,FT_BG96_OK);
-   //send_data_CMockIgnoreArg_expect();
    TEST_ASSERT_EQUAL(FT_BG96_OK,get_status_modem(&config_module));
 
    send_data_ExpectAndReturn(CMD_BG96_STATUS_MODEM,RS_BG96_OK,buffer_resp,1000,FT_BG96_ERROR);
@@ -59,8 +56,7 @@ void test_get_status_sim(void)
 
    send_data_ExpectAndReturn(CMD_BG96_STATUS_SIM,RS_BG96_OK,buffer_resp,5000,FT_BG96_ERROR);
    TEST_ASSERT_EQUAL(FT_BG96_ERROR,get_status_sim(&config_module));
-
-   
+    
 }
 
 void test_get_info_product(void)
